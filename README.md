@@ -31,8 +31,8 @@ Example:
 
 # TODO:
 - multithreading + mutex = DONE
+- Arg parsing, fix alloc error = DONE
 - better error handling, with clean exit
-- Arg parsing, fix alloc error
 - socket
 - POST
 
