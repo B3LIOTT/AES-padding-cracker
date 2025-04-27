@@ -8,6 +8,7 @@
 #include "include/constants.h"
 #include "include/network.h"
 #include "include/cracker.h"
+#include "include/common.h"
 #include "include/target.h"
 #include "include/utils.h"
 #include "include/log.h"
@@ -52,15 +53,6 @@ int main(int argc, char* argv[]) {
     Log::print(Constants::BAN);
 
     Args args = getArgs(argc, argv);
-
-    //Args args;
-    // args.blockSize = 16;
-    // args.cypher = "59873749DC0D3A4ACC7F19D711853685EFCDBFECDF85D6B3AF6171F793CC20B4";
-    // args.data = "c=";
-    // args.method = "GET";
-    // args.paddingError = "Padding Error";
-    // args.url = "http://challenge01.root-me.org/realiste/ch12/index.aspx";
-
     Log::print("URL: "+args.url);
     Log::print("Method: " + args.method);
     if (!args.data.empty()) {
@@ -107,6 +99,37 @@ int main(int argc, char* argv[]) {
     }
 
     Log::bingo("Decrypted message: " + msg);
+
+
+    // ask to encrypt a chosen message
+    std::string userInput;
+    unsigned int plainSize;
+    unsigned int nBlocksNeeded;
+    std::vector<std::string> newBlocks;
+    std::string newCypher;
+
+    while (true) {
+        Log::print("Do you want to craft a custom cypher? Enter your plaintext or type 'q' to quit: ");
+        std::cin >> userInput;
+        
+        if (userInput == "q") {
+            Log::print("Bye");
+            break;
+        }
+        // TODO: fix segfault
+        // plainSize = userInput.size();
+        // nBlocksNeeded = (plainSize + Target::getBlockSize() - 1) / Target::getBlockSize();
+        // if (nBlocksNeeded < nBlocks) {
+        //     newBlocks = BuildBlocks(userInput, cypherDataList, nBlocksNeeded, plainSize);
+        //     newBlocks.push_back(blocks[nBlocksNeeded]);
+        //     newCypher = BlocksToCypher(newBlocks, nBlocksNeeded);
+        //     Log::bingo("New cypher text: " + newCypher);
+        // } else {
+        //     Log::warning("Can't craft this message with previous cracked data because it's too long.");
+        // }
+
+        newBlocks.clear();
+    }
 
     return 0;
 }

@@ -3,6 +3,8 @@ This tool is the C++ version, with improvements, of my AES-CBC-CRACKER tool also
 
 The goal is to exploit a padding oracle to recover a plaintext.
 
+Thanks to [cxxopts](https://github.com/jarro2783/cxxopts) I saved a lot of time on parsing arguments.
+
 # Usage
 First, compile the project:
 ```bash

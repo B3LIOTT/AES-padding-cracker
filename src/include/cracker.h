@@ -5,10 +5,8 @@
 #include <curl/curl.h>
 
 
-struct CypherData {
-    std::vector<unsigned int> Pn;
-    std::vector<unsigned int> Dn;
-};
+// forward struct
+struct CypherData;
 
 
 bool PaddingError(std::string& response);

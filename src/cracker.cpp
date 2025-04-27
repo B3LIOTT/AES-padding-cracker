@@ -6,6 +6,7 @@
 #include "include/network.h"
 #include "include/cracker.h"
 #include "include/target.h"
+#include "include/common.h"
 #include "include/utils.h"
 #include "include/log.h"
 

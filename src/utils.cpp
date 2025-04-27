@@ -6,6 +6,7 @@
 
 #include "cxxopts/cxxopts.hpp"
 #include "include/target.h"
+#include "include/common.h"
 #include "include/utils.h"
 #include "include/log.h"
 
@@ -110,6 +111,54 @@ void ModifyBlock(std::string& block, std::string val, unsigned int& ind) {
     }
 }
 
+std::vector<std::string> BuildBlocks(std::string& plainText, std::vector<CypherData>& cypherDataList, unsigned int& nBlocksNeeded, unsigned int& plainSize) {
+    std::vector<std::string> blocks;
+    unsigned int blockSize = Target::getBlockSize();
+    unsigned int padLen = blockSize*nBlocksNeeded - plainSize;
+    unsigned int N = blockSize;
+    std::string block = "";
+
+    unsigned int k;
+    unsigned int j;
+    unsigned int i;
+    unsigned int ascii;
+    unsigned int asciiCode;
+
+    for (k=0; k<blockSize; k++) {
+        if (k == nBlocksNeeded-1) {
+            N = plainSize - blockSize*k;
+        }
+        for (i=0; i<N; i++) {
+            ascii = static_cast<unsigned int>(plainText[blockSize*k+i]) ^ cypherDataList[k].Dn[i];
+            block += IntToHex(ascii);
+        }
+
+        // if it is le last block, we have to pad the end of it (when the message lenght isn't a multiple of 16)
+        if (k == nBlocksNeeded-1) { 
+            for (j=N+1; j<N+1+padLen; j++) {
+                asciiCode = padLen ^ cypherDataList[k].Dn[j];
+                block += IntToHex(asciiCode);
+            }
+        }
+
+        blocks.push_back(block);
+    }
+
+    return blocks;
+}
+
+
+std::string BlocksToCypher(std::vector<std::string>& blocks, const unsigned int& nBlocks) {
+    std::string cypher = "";
+    unsigned int i;
+    for (i=0; i<nBlocks; i++) {
+        cypher += blocks[i];
+    }
+
+    return cypher;
+}
+
+
 std::string BlocksToCypher(
     std::vector<std::string>& blocks, 
     const unsigned int& nBlocks,
@@ -129,7 +178,6 @@ std::string BlocksToCypher(
 
     return cypher;
 }
-
 
 
 std::string GetVal(std::string& str, unsigned int& ind) {
