@@ -4,9 +4,8 @@ This tool is the C++ version, with improvements, of my AES-CBC-CRACKER tool also
 The goal is to exploit a padding oracle to recover a plaintext.
 
 # Usage
-First, install a required package and compile the project:
+First, compile the project:
 ```bash
-sudo apt-get install libboost-all-dev
 make
 ```
 
