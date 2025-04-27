@@ -29,7 +29,7 @@ Args getArgs(int argc, char** argv) {
         auto result = options.parse(argc, argv);
 
         if (result.count("help")) {
-            std::cout << options.help() << std::endl;
+            Log::print(options.help());
             exit(0);
         }
 

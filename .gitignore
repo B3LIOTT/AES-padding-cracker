@@ -2,4 +2,4 @@
 AES-padding-cracker
 
 .vscode/
-obj/
+obj/*

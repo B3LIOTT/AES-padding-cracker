@@ -37,7 +37,7 @@ void Guess(
 
 
 CypherData Fuzz(CURL* curl, std::vector<std::string>& blocks, unsigned int k) {
-    
+
     CypherData cypherData;
     cypherData.Dn.assign(Target::getBlockSize(), 0);
     cypherData.Pn.assign(Target::getBlockSize(), 0);

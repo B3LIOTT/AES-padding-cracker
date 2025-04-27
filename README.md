@@ -25,7 +25,7 @@ Usage:
 
 Example:
 ```bash
-./AES-padding-cracker -u "http://challenge01.root-me.org/realiste/ch12/index.aspx" -m GET -d "c=" -b 16 -c 59873749DC0D3A4ACC7F19D711853685EFCDBFECDF85D6B3AF6171F793CC20B4 -e "Padding Error"
+./AES-padding-cracker -u "http://example.com/index.php" -m GET -d "c=" -b 16 -c 59873749DC0D3A4ACC7F19D711853685EFCDBFECDF85D6B3AF6171F793CC20B4 -e "Padding Error"
 ```
 
 
