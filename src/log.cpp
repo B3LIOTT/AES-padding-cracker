@@ -18,7 +18,9 @@ namespace Log {
     }
 
     void bingo(const std::string& msg) {
-        std::cout << GREEN << "[INFO]-" + msg << std::endl;
+        std::cout << std::endl;
+        std::cout << GREEN << "[SUCCESS]-" + msg << std::endl;
+        std::cout << std::endl;
     }
 
     void warning(const std::string& msg) {

