@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
     );
 
     std::vector<std::string> blocks = GetBlocks(args.cypher);
-    unsigned int nBlocks = blocks.size()-1; // -1 because we added a block of 0x00s
+    const unsigned int nBlocks = blocks.size()-1; // -1 because we added a block of 0x00s
     
     Log::print("Blocks:");
     unsigned int k;
@@ -116,17 +116,17 @@ int main(int argc, char* argv[]) {
             Log::print("Bye");
             break;
         }
-        // TODO: fix segfault
-        // plainSize = userInput.size();
-        // nBlocksNeeded = (plainSize + Target::getBlockSize() - 1) / Target::getBlockSize();
-        // if (nBlocksNeeded < nBlocks) {
-        //     newBlocks = BuildBlocks(userInput, cypherDataList, nBlocksNeeded, plainSize);
-        //     newBlocks.push_back(blocks[nBlocksNeeded]);
-        //     newCypher = BlocksToCypher(newBlocks, nBlocksNeeded);
-        //     Log::bingo("New cypher text: " + newCypher);
-        // } else {
-        //     Log::warning("Can't craft this message with previous cracked data because it's too long.");
-        // }
+
+        plainSize = userInput.size();
+        nBlocksNeeded = (plainSize + Target::getBlockSize() - 1) / Target::getBlockSize();
+        if (nBlocksNeeded < nBlocks) {
+            BuildBlocks(userInput, cypherDataList, newBlocks, nBlocksNeeded, plainSize);
+            newBlocks.push_back(blocks[nBlocksNeeded]);
+            newCypher = BlocksToCypher(newBlocks, nBlocksNeeded+1);
+            Log::bingo("New cypher text: " + newCypher);
+        } else {
+            Log::warning("Can't craft this message with previous cracked data because it's too long.");
+        }
 
         newBlocks.clear();
     }

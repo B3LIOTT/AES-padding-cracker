@@ -111,8 +111,20 @@ void ModifyBlock(std::string& block, std::string val, unsigned int& ind) {
     }
 }
 
-std::vector<std::string> BuildBlocks(std::string& plainText, std::vector<CypherData>& cypherDataList, unsigned int& nBlocksNeeded, unsigned int& plainSize) {
-    std::vector<std::string> blocks;
+void BuildBlocks(
+    std::string& plainText, 
+    std::vector<CypherData>& cypherDataList, 
+    std::vector<std::string>& blocks,
+    unsigned int& nBlocksNeeded, 
+    unsigned int& plainSize
+) {
+/*
+    recall that C1^D2 = P2
+    hence if we want C1^D2 = M
+    we build C1 as C1 = M^D2
+    
+    add padding to the desired plain text to validate the decryption
+*/
     unsigned int blockSize = Target::getBlockSize();
     unsigned int padLen = blockSize*nBlocksNeeded - plainSize;
     unsigned int N = blockSize;
@@ -122,9 +134,8 @@ std::vector<std::string> BuildBlocks(std::string& plainText, std::vector<CypherD
     unsigned int j;
     unsigned int i;
     unsigned int ascii;
-    unsigned int asciiCode;
 
-    for (k=0; k<blockSize; k++) {
+    for (k=0; k<nBlocksNeeded; k++) {
         if (k == nBlocksNeeded-1) {
             N = plainSize - blockSize*k;
         }
@@ -135,16 +146,14 @@ std::vector<std::string> BuildBlocks(std::string& plainText, std::vector<CypherD
 
         // if it is le last block, we have to pad the end of it (when the message lenght isn't a multiple of 16)
         if (k == nBlocksNeeded-1) { 
-            for (j=N+1; j<N+1+padLen; j++) {
-                asciiCode = padLen ^ cypherDataList[k].Dn[j];
-                block += IntToHex(asciiCode);
+            for (j=N; j<N+padLen; j++) {
+                ascii = padLen ^ cypherDataList[k].Dn[j];
+                block += IntToHex(ascii);
             }
         }
 
         blocks.push_back(block);
     }
-
-    return blocks;
 }
 
 

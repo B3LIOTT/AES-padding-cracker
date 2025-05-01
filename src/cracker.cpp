@@ -61,7 +61,7 @@ CypherData Fuzz(CURL* curl, std::vector<std::string>& blocks, unsigned int k) {
     Log::info("Fuzzing block n°" + std::to_string(k+1) + "\n");
     try {
         // For every hex byte, in reverse
-        for (j=size-1; j>=2; j=j-2) {
+        for (j=size-1; j>0 && j<size; j-=2) {
             currentVal = GetVal(block, j);
             std::string blockCopy(block);
 

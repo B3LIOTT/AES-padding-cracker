@@ -37,7 +37,13 @@ void ModifyBlock(
     unsigned int& ind
 );
 
-std::vector<std::string> BuildBlocks(std::string& plainText, std::vector<CypherData>& cypherDataList, unsigned int& nBlocksNeeded, unsigned int& plainSize);
+void BuildBlocks(
+    std::string& plainText, 
+    std::vector<CypherData>& cypherDataList, 
+    std::vector<std::string>& newBlocks,
+    unsigned int& nBlocksNeeded, 
+    unsigned int& plainSize
+);
 
 std::string BlocksToCypher(
     std::vector<std::string>& blocks, 
