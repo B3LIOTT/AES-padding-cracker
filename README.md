@@ -20,6 +20,7 @@ Usage:
 
   -u, --url arg            Url pointing to the oracle
   -m, --method arg         SOCKET, GET or POST method
+  -p, --port arg           Port number for SOCKET method (default: 0)
   -d, --data arg           Data to send (default: "")
   -c, --cypher arg         Cypher text
   -b, --block-size arg     Block size (8,16,32,64)
