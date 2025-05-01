@@ -1,6 +1,8 @@
-#include <string>
 #include <curl/curl.h>
 #include <stdexcept>
+#include <netdb.h> 
+#include <string>
+#include <mutex>
 
 #include "include/network.h"
 #include "include/constants.h"
@@ -43,4 +45,60 @@ CURL* CurlInit() {
 
 void CurlCleanup(CURL* curl) {
     curl_easy_cleanup(curl);
+}
+
+
+// SOCKET ----------------------------
+std::mutex socket_mutex;
+
+SocketClient::SocketClient(const std::string& host, const unsigned int& port) {
+    struct addrinfo hints{}, *res;
+
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+
+    std::string portStr = std::to_string(port);
+    int status = getaddrinfo(host.c_str(), portStr.c_str(), &hints, &res);
+    if (status != 0) {
+        throw std::runtime_error("getaddrinfo: " + std::string(gai_strerror(status)));
+    }
+
+    sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    if (sockfd < 0) {
+        freeaddrinfo(res);
+        throw std::runtime_error("Failed to create socket");
+    }
+
+    if (connect(sockfd, res->ai_addr, res->ai_addrlen) < 0) {
+        freeaddrinfo(res);
+        throw std::runtime_error("Connection failed");
+    }
+
+    freeaddrinfo(res);
+}
+
+SocketClient::~SocketClient() {
+    close(sockfd);
+}
+
+std::string SocketClient::socketRequest(const std::string& payload) {
+    std::lock_guard<std::mutex> lock(socket_mutex);
+
+    if (send(sockfd, payload.c_str(), payload.size(), 0) < 0) {
+        throw std::runtime_error("Failed to send data");
+    }
+
+    char buffer[1024];
+    std::memset(buffer, 0, sizeof(buffer));
+    ssize_t bytes_received = recv(sockfd, buffer, sizeof(buffer) - 1, 0);
+
+    if (bytes_received == 0) {
+        throw std::runtime_error("Connection closed by peer");
+    }
+
+    if (bytes_received < 0) {
+        throw std::runtime_error("Failed to receive response");
+    }
+
+    return std::string(buffer, bytes_received);
 }

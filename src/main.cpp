@@ -1,5 +1,7 @@
 #include <curl/curl.h>
+#include <functional>
 #include <iostream>
+#include <memory> 
 #include <thread>
 #include <string>
 #include <atomic>
@@ -13,9 +15,14 @@
 #include "include/utils.h"
 #include "include/log.h"
 
+#define GET "GET"
+#define POST "POST"
+#define SOCKET "SOCKET"
+
 
 std::mutex msgMutex;
 std::mutex cdlMutex;
+
 
 void worker(
     unsigned int k,
@@ -23,25 +30,50 @@ void worker(
     std::vector<CypherData>& cypherDataList,
     std::string& msg
 ) {
-    CURL* curl = CurlInit();
-    unsigned int p;
-
     if (blocks.size() < (k+1)) {
         Log::error("Not enough blocks to slice in worker " + std::to_string(k));
-        CurlCleanup(curl);
         exit(1);
     }
     std::vector<std::string> slice(blocks.begin(), blocks.begin() + (k+2));
+    CypherData cd;
 
-    CypherData cd = Fuzz(curl, slice, k);
-    CurlCleanup(curl);
+    std::function<std::string(std::string&)> requestFunc;
 
+    if (Target::getMethod() == SOCKET) {
+        SocketClient client(
+            Target::getUrl(),
+            Target::getPort()
+        );
+        requestFunc = [&client](std::string& msg) {
+            return client.socketRequest(msg);
+        };
+        try {
+            cd = Fuzz(requestFunc, slice, k);
+        } catch (const std::exception& e) {
+            Log::error(e.what());
+        }
+
+    } else {
+        CURL* curl = CurlInit();
+        requestFunc = [&curl](std::string& msg) {
+            return GetRequest(curl, Target::getPayload(msg));
+        };
+        try {
+            cd = Fuzz(requestFunc, slice, k);
+        } catch (const std::exception& e) {
+            Log::error(e.what());
+            CurlCleanup(curl);
+        }
+    }
+    
     // Lock the access to cypherDataList
     {
         std::lock_guard<std::mutex> lock(cdlMutex);
         cypherDataList[k] = cd;
     }
-    
+
+    // message reconstruction
+    unsigned int p;
     for (p=0; p<Target::getBlockSize(); p++) {
         // Lock the access to msg
         std::lock_guard<std::mutex> lock(msgMutex);
@@ -54,8 +86,9 @@ int main(int argc, char* argv[]) {
 
     Args args = getArgs(argc, argv);
     Log::print("URL: "+args.url);
+    if(args.method==SOCKET) Log::print("Port: "+std::to_string(args.port));
     Log::print("Method: " + args.method);
-    if (!args.data.empty()) {
+    if (args.method!=SOCKET) {
         Log::print("Data: " + args.data);
     }
     Log::print("Cypher: " + args.cypher);
@@ -67,6 +100,7 @@ int main(int argc, char* argv[]) {
     Target::initialize(
         args.url,
         args.method,
+        args.port,
         args.data,
         args.paddingError,
         args.blockSize
@@ -88,9 +122,16 @@ int main(int argc, char* argv[]) {
     std::string msg(nBlocks*args.blockSize, '\0');
 
     // create threads, one for each block
+    Log::print("Creating one thread per block...\n");
     std::vector<std::thread> threads;
     for (k=0; k<nBlocks;k++) {
-        threads.emplace_back(worker, k, std::ref(blocks), std::ref(cypherDataList), std::ref(msg));
+        threads.emplace_back(
+            worker, 
+            k, 
+            std::ref(blocks), 
+            std::ref(cypherDataList), 
+            std::ref(msg)
+        );
     }
 
     // wait threads
@@ -99,7 +140,6 @@ int main(int argc, char* argv[]) {
     }
 
     Log::bingo("Decrypted message: " + msg);
-
 
     // ask to encrypt a chosen message
     std::string userInput;

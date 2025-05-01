@@ -21,6 +21,7 @@ Args getArgs(int argc, char** argv) {
         options.add_options()
             ("u,url", "Url pointing to the oracle", cxxopts::value<std::string>())
             ("m,method", "SOCKET, GET or POST method", cxxopts::value<std::string>())
+            ("p,port", "Port number for SOCKET method", cxxopts::value<unsigned int>()->default_value("0"))
             ("d,data", "Data to send", cxxopts::value<std::string>()->default_value(""))
             ("c,cypher", "Cypher text", cxxopts::value<std::string>())
             ("b,block-size", "Block size (8,16,32,64)", cxxopts::value<unsigned int>())
@@ -52,11 +53,19 @@ Args getArgs(int argc, char** argv) {
 
         args.url = result["url"].as<std::string>();
         args.method = result["method"].as<std::string>();
+        args.port = result["port"].as<unsigned int>();
         args.data = result["data"].as<std::string>();
         args.paddingError = result["padding-error"].as<std::string>();
         
         if (args.method != "SOCKET" && args.data.empty()) {
             throw std::runtime_error("-d (--data) is required for GET or POST methods.");
+        }
+
+        if (args.method == "SOCKET" && args.port == 0) {
+            throw std::runtime_error("-p (--port) is required for SOCKET method.");
+        }
+        if (args.port > 65536) {
+            throw std::runtime_error("You must enter a valid port number");
         }
 
     } catch (const std::exception& e) {

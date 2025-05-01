@@ -41,6 +41,5 @@ TODO
 
 # TODO:
 - better error handling, with clean exit
-- socket
-- POST
+- POST method
 

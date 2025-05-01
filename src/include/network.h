@@ -1,8 +1,11 @@
 #pragma once
 
-#include <string>
+#include <sys/socket.h>
 #include <curl/curl.h>
-
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <cstring>
+#include <string>
 
 
 CURL* CurlInit();
@@ -16,20 +19,19 @@ std::string GetRequest(CURL* curl, const std::string& fullUrl);
 //std::string PostRequest(const std::string& payload);
 
 
+// SOCKET -------------------
+
 class SocketClient {
 private:
     std::string url;
-    int conn;
+    unsigned int port;
+    int sockfd;
 
 public:
-    SocketClient(const std::string& serverUrl);
+    SocketClient(const std::string& url, const unsigned int& port);
 
     ~SocketClient();
 
-    bool connect();
-
     std::string socketRequest(const std::string& payload);
-
-    bool isConnected() const;
 };
 

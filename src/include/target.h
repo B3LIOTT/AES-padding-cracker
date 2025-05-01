@@ -10,6 +10,7 @@ class Target {
         // Getters
         static const std::string& getUrl();
         static const std::string& getMethod();
+        static const unsigned int& getPort();
         static const std::string& getData();
         static const std::string& getErrMsg();
         static const unsigned int& getBlockSize();
@@ -18,6 +19,7 @@ class Target {
         
         static void initialize(const std::string& defaultUrl, 
                               const std::string& defaultMethod, 
+                              const unsigned int& defaultPort,
                               const std::string& defaultGetParam,
                               const std::string& defaultErrMsg,
                               const unsigned int& defaultBlockSize);
@@ -25,6 +27,7 @@ class Target {
     private:
         static std::string url;
         static std::string method;
+        static unsigned int port;
         static std::string data;
         static std::string errMsg;
         static unsigned int blockSize;

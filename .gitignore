@@ -3,3 +3,5 @@ AES-padding-cracker
 
 .vscode/
 obj/*
+
+test.txt

@@ -4,8 +4,8 @@
 
 # Compiler settings - Can be customized.
 CC = g++
-CXXFLAGS = -std=c++11 -Wall
-LDFLAGS = -lcurl -lboost_program_options
+CXXFLAGS = -std=c++14 -Wall
+LDFLAGS = -lcurl -lboost_program_options 
 
 # Makefile settings - Can be customized.
 APPNAME = AES-padding-cracker

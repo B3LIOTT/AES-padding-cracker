@@ -1,4 +1,5 @@
 #include <curl/curl.h>
+#include <functional>
 #include <stdexcept> 
 #include <string>
 #include <mutex>
@@ -38,7 +39,11 @@ void Guess(
 }
 
 
-CypherData Fuzz(CURL* curl, std::vector<std::string>& blocks, unsigned int k) {
+CypherData Fuzz(
+    std::function<std::string(std::string&)> request, 
+    std::vector<std::string>& blocks, 
+    unsigned int k
+) {
 
     CypherData cypherData;
     cypherData.Dn.assign(Target::getBlockSize(), 0);
@@ -90,13 +95,9 @@ CypherData Fuzz(CURL* curl, std::vector<std::string>& blocks, unsigned int k) {
                 
                 // Senb this new cyphertext to the oracle
                 try {
-                    response = GetRequest(curl, Target::getPayload(newCypher));
+                    response = request(newCypher);
                 } catch(const std::exception& e) {
-                    Log::error("Error while making a GET request");
-                    Log::error(e.what());
-
-                    CurlCleanup(curl);
-                    exit(1);
+                    throw std::runtime_error("Error while making a GET request: " + std::string(e.what()));
                 }
 
                 // Check if the page contains the padding error text info
@@ -123,10 +124,6 @@ CypherData Fuzz(CURL* curl, std::vector<std::string>& blocks, unsigned int k) {
         return cypherData;
 
     } catch (const std::exception& e) {
-        Log::error("Error while fuzzing");
-        Log::error(e.what());
-
-        CurlCleanup(curl);
-        exit(1);
+        throw std::runtime_error("Error while fuzzing: " + std::string(e.what()));
     }
 }

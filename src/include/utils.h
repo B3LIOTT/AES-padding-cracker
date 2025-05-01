@@ -12,6 +12,7 @@ struct CypherData;
 struct Args {
     std::string url;
     std::string method;
+    unsigned int port;
     std::string data;
     std::string cypher;
     unsigned int blockSize;
