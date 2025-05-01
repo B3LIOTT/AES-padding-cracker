@@ -1,5 +1,7 @@
 # AES PADDING CRACKER
-This tool is the C++ version, with improvements, of my AES-CBC-CRACKER tool also available on my Github repo.
+The fastest pading oracle cracker, in C++ with multithreading (1 thread per block).
+
+The goal was to make a C++ version, with improvements, of my AES-CBC-CRACKER tool also available on my Github repo.
 
 The goal is to exploit a padding oracle to recover a plaintext.
 
