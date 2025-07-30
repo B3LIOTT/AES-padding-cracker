@@ -15,10 +15,6 @@
 #include "include/utils.h"
 #include "include/log.h"
 
-#define GET "GET"
-#define POST "POST"
-#define SOCKET "SOCKET"
-
 
 std::mutex msgMutex;
 std::mutex cdlMutex;
@@ -55,9 +51,16 @@ void worker(
 
     } else {
         CURL* curl = CurlInit();
-        requestFunc = [&curl](std::string& msg) {
-            return GetRequest(curl, Target::getPayload(msg));
-        };
+        if (Target::getMethod() == GET) {
+            requestFunc = [&curl](std::string& msg) {
+                return GetRequest(curl, Target::getPayload(msg));
+            };
+        } else if (Target::getMethod() == COOKIES) {
+            requestFunc = [&curl](std::string& msg) {
+                return CookiesRequest(curl, Target::getUrl(), Target::getPayload(msg));
+            };
+        }
+       
         try {
             cd = Fuzz(requestFunc, slice, k);
         } catch (const std::exception& e) {

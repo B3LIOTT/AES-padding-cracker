@@ -3,6 +3,12 @@
 #include <string>
 
 
+#define COOKIES "COOKIES"
+#define SOCKET "SOCKET"
+#define POST "POST"
+#define GET "GET"
+
+
 class Target {
     public:
         Target() = delete;

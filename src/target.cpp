@@ -35,7 +35,13 @@ const unsigned int& Target::getBlockSize() {
 }
 
 const std::string Target::getPayload(std::string& cypher) {
-    return url+'?'+data+cypher;
+    if (method == GET) {
+        return url+'?'+data+cypher;
+    }
+
+    if (method == COOKIES) {
+        return data+cypher;
+    }
 }
 
 

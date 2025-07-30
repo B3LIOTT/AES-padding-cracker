@@ -20,9 +20,9 @@ Args getArgs(int argc, char** argv) {
         // define args
         options.add_options()
             ("u,url", "Url pointing to the oracle", cxxopts::value<std::string>())
-            ("m,method", "SOCKET, GET or POST method", cxxopts::value<std::string>())
+            ("m,method", "SOCKET, GET, POST or COOKIES method", cxxopts::value<std::string>())
             ("p,port", "Port number for SOCKET method", cxxopts::value<unsigned int>()->default_value("0"))
-            ("d,data", "Data to send", cxxopts::value<std::string>()->default_value(""))
+            ("d,data", "Data to send (GET, POST or COOKIE param depending on the choosen method)", cxxopts::value<std::string>()->default_value(""))
             ("c,cypher", "Cypher text", cxxopts::value<std::string>())
             ("b,block-size", "Block size (8,16,32,64)", cxxopts::value<unsigned int>())
             ("e,padding-error", "Padding error text", cxxopts::value<std::string>())
@@ -58,7 +58,7 @@ Args getArgs(int argc, char** argv) {
         args.paddingError = result["padding-error"].as<std::string>();
         
         if (args.method != "SOCKET" && args.data.empty()) {
-            throw std::runtime_error("-d (--data) is required for GET or POST methods.");
+            throw std::runtime_error("-d (--data) is required for GET, POST or COOKIES methods.");
         }
 
         if (args.method == "SOCKET" && args.port == 0) {

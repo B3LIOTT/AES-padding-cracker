@@ -18,6 +18,8 @@ std::string GetRequest(CURL* curl, const std::string& fullUrl);
 
 //std::string PostRequest(const std::string& payload);
 
+std::string CookiesRequest(CURL* curl, const std::string& url, const std::string& cookies);
+
 
 // SOCKET -------------------
 
