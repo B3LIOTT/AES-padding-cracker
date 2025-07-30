@@ -91,9 +91,7 @@ int main(int argc, char* argv[]) {
     Log::print("URL: "+args.url);
     if(args.method==SOCKET) Log::print("Port: "+std::to_string(args.port));
     Log::print("Method: " + args.method);
-    if (args.method!=SOCKET) {
-        Log::print("Data: " + args.data);
-    }
+    if (args.method!=SOCKET) Log::print("Data: " + args.data);
     Log::print("Cypher: " + args.cypher);
     Log::print("Block size: " + std::to_string(args.blockSize));
     Log::print("Padding error: " + args.paddingError);
@@ -131,7 +129,7 @@ int main(int argc, char* argv[]) {
         threads.emplace_back(
             worker, 
             k, 
-            std::ref(blocks), 
+            std::ref(blocks),
             std::ref(cypherDataList), 
             std::ref(msg)
         );
