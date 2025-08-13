@@ -32,6 +32,29 @@ std::string GetRequest(CURL* curl, const std::string& fullUrl) {
 }
 
 
+std::string PostRequest(CURL* curl, const std::string& url, const std::string& payload) {
+    std::string response;
+
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+    // POST
+    curl_easy_setopt(curl, CURLOPT_POST, 1L);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, payload.size());
+
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+
+    CURLcode res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+        throw std::runtime_error(curl_easy_strerror(res));
+    }
+
+    return response;
+}
+
+
+
 std::string CookiesRequest(CURL* curl, const std::string& url, const std::string& cookies) {
     std::string response;
 

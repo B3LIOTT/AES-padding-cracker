@@ -16,7 +16,7 @@ static size_t WriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata
 
 std::string GetRequest(CURL* curl, const std::string& fullUrl);
 
-//std::string PostRequest(const std::string& payload);
+std::string PostRequest(CURL* curl, const std::string& url, const std::string& payload);
 
 std::string CookiesRequest(CURL* curl, const std::string& url, const std::string& cookies);
 

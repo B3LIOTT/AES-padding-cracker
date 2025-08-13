@@ -59,6 +59,10 @@ void worker(
             requestFunc = [&curl](std::string& msg) {
                 return CookiesRequest(curl, Target::getUrl(), Target::getPayload(msg));
             };
+        } else if (Target::getMethod() == POST) {
+            requestFunc = [&curl](std::string& msg) {
+                return PostRequest(curl, Target::getUrl(), Target::getPayload(msg));
+            };
         }
        
         try {
