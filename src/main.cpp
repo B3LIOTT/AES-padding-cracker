@@ -119,32 +119,56 @@ int main(int argc, char* argv[]) {
     for (k=1; k<nBlocks+1;k++) {
         Log::print(std::to_string(k) + ": " + blocks[k]);
     }
-    Log::print("\nPress any key to start the attack...\n");
-    std::cin.get();
 
     std::vector<CypherData> cypherDataList;
     cypherDataList.resize(nBlocks);
-    std::string msg(nBlocks*args.blockSize, '\0');
+    if (1) {
+        std::string useSave;
+        Log::bingo("Save found! Do you want to use it? (y/n)");
+        std::cin >> useSave;
 
-    // create threads, one for each block
-    Log::print("Creating one thread per block...\n");
-    std::vector<std::thread> threads;
-    for (k=0; k<nBlocks;k++) {
-        threads.emplace_back(
-            worker, 
-            k, 
-            std::ref(blocks),
-            std::ref(cypherDataList), 
-            std::ref(msg)
-        );
+        if (useSave != "y") {
+            goto attack;
+        }
+
+        try {
+            cypherDataList = loadResult(Target::getUrl(), nBlocks);
+        } catch(const std::exception& e) {
+            Log::error("Error while loading saved data: " + std::string(e.what()));
+            return 1;
+        }
+
+    } else {
+
+    attack:
+        Log::print("\nPress any key to start the attack...\n");
+        std::cin.get();
+
+        std::string msg(nBlocks*args.blockSize, '\0');
+
+        // create threads, one for each block
+        Log::print("Creating one thread per block...\n");
+        std::vector<std::thread> threads;
+        for (k=0; k<nBlocks;k++) {
+            threads.emplace_back(
+                worker, 
+                k, 
+                std::ref(blocks),
+                std::ref(cypherDataList), 
+                std::ref(msg)
+            );
+        }
+
+        // wait threads
+        for (auto& t : threads) {
+            t.join();
+        }
+
+        Log::bingo("Decrypted message: " + msg);
+
+        Log::info("Saving results in saves/");
+        saveResult(cypherDataList, Target::getUrl());
     }
-
-    // wait threads
-    for (auto& t : threads) {
-        t.join();
-    }
-
-    Log::bingo("Decrypted message: " + msg);
 
     // ask to encrypt a chosen message
     std::string userInput;

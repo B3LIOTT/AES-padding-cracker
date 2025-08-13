@@ -49,7 +49,5 @@ Example for socket connections:
 
 # TODO:
 - better error handling, with clean exit
-- POST method
 - Code optimization
 - Hex AND bas64 payload format
-- Attacks saving

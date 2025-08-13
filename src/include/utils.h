@@ -21,6 +21,11 @@ struct Args {
 
 Args getArgs(int argc, char** argv);
 
+
+void saveResult(const std::vector<CypherData>& data, const std::string& filename);
+std::vector<CypherData> loadResult(const std::string& filename, const unsigned int& nBlocks);
+
+
 // Hex manipulation
 std::string IntToHex(unsigned int& val);
 

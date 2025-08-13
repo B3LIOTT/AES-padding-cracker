@@ -1,14 +1,18 @@
 #include <stdexcept> 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <iomanip>
 #include <string>
+
 
 #include "cxxopts/cxxopts.hpp"
 #include "include/target.h"
 #include "include/common.h"
 #include "include/utils.h"
 #include "include/log.h"
+
+#define SAVE_DIR "save/"
 
 
 Args getArgs(int argc, char** argv) {
@@ -75,6 +79,56 @@ Args getArgs(int argc, char** argv) {
 
     return args;
 }
+
+
+void saveResult(const std::vector<CypherData>& data, const std::string& filename) {
+    std::ofstream file(SAVE_DIR+filename, std::ios::binary);
+    if (!file) {
+        Log::error("Can't open file to save results");
+        return;
+    }
+
+    size_t total = data.size();
+    file.write(reinterpret_cast<const char*>(&total), sizeof(total));
+
+    for (const auto& cd : data) {
+        size_t sizePn = cd.Pn.size();
+        file.write(reinterpret_cast<const char*>(&sizePn), sizeof(sizePn));
+        file.write(reinterpret_cast<const char*>(cd.Pn.data()), sizePn * sizeof(unsigned int));
+
+        size_t sizeDn = cd.Dn.size();
+        file.write(reinterpret_cast<const char*>(&sizeDn), sizeof(sizeDn));
+        file.write(reinterpret_cast<const char*>(cd.Dn.data()), sizeDn * sizeof(unsigned int));
+    }
+}
+
+
+std::vector<CypherData> loadResult(const std::string& filename, const unsigned int& nBlocks) {
+    std::ifstream file(SAVE_DIR+filename, std::ios::binary);
+    if (!file) throw std::runtime_error("Can't open file to load results");
+
+    size_t total;
+    file.read(reinterpret_cast<char*>(&total), sizeof(total));
+
+    if (total != nBlocks) throw std::runtime_error("Data size is not the expected one");
+
+    std::vector<CypherData> data(total);
+
+    for (size_t i = 0; i < total; ++i) {
+        size_t sizePn;
+        file.read(reinterpret_cast<char*>(&sizePn), sizeof(sizePn));
+        data[i].Pn.resize(sizePn);
+        file.read(reinterpret_cast<char*>(data[i].Pn.data()), sizePn * sizeof(unsigned int));
+
+        size_t sizeDn;
+        file.read(reinterpret_cast<char*>(&sizeDn), sizeof(sizeDn));
+        data[i].Dn.resize(sizeDn);
+        file.read(reinterpret_cast<char*>(data[i].Dn.data()), sizeDn * sizeof(unsigned int));
+    }
+
+    return data;
+}
+
 
 
 // Hex manipulation
