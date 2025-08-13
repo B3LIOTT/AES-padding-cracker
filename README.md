@@ -34,11 +34,15 @@ Example for GET requests:
 ```
 
 Example for POST requests:
-TODO
+```bash
+./AES-padding-cracker -u "http://example.com/index.php" -m POST -d "param1=123&cypher=*" -b 16 -c 59873749DC0D3A4ACC7F19D711853685EFCDBFECDF85D6B3AF6171F793CC20B4 -e "Padding Error"
+```
+The '*' char tells the script to replace it by the cyphertext.
+
 
 Example for socket connections:
 ```bash
-./AES-padding-cracker AES-padding-cracker -u "example.com" -p 12345 -m "SOCKET" -b 16 -c "BC16542433100D9522DC3B6428D4FF5F7FC67B4994323C47ED09F185C3CE7A2E" -e "Padding Error"
+./AES-padding-cracker -u "example.com" -p 12345 -m "SOCKET" -b 16 -c "BC16542433100D9522DC3B6428D4FF5F7FC67B4994323C47ED09F185C3CE7A2E" -e "Padding Error"
 ```
 
 

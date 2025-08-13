@@ -6,6 +6,7 @@
 #define COOKIES "COOKIES"
 #define SOCKET "SOCKET"
 #define POST "POST"
+#define POST_R "*"
 #define GET "GET"
 
 

@@ -42,6 +42,14 @@ const std::string Target::getPayload(std::string& cypher) {
     if (method == COOKIES) {
         return data+cypher;
     }
+
+    if (method == POST) {
+        size_t pos = data.find(POST_R);
+        if (pos != std::string::npos) { // trouvé
+            data.replace(pos, 1, cypher);
+        }
+        return data;
+    }
 }
 
 
