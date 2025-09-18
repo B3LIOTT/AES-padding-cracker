@@ -11,22 +11,27 @@
 #include "include/utils.h"
 #include "include/log.h"
 
-
+/*
+Return wheter or not the server responded with an "incorrect padding error"
+*/
 bool PaddingError(std::string& response) {
     return response.find(Target::getErrMsg()) != std::string::npos;
 }
 
+/*
+Calculates a decrypted byte based on fuzzing result:
+
+we have x^d = pad (valid padding)
+hence d = pad^x
+and we have c^d = plain
+
+*/
 void Guess(
     const std::string& hexC, 
     const unsigned int& X, 
     const unsigned int& pad,
     CypherData& cypherData
 ) {
-/*
-    we have x^d = pad (valid padding)
-    hence d = pad^x
-    and we have c^d = plain
-*/
     if (Target::getBlockSize() < pad || pad == 0) {
         throw std::out_of_range("Padding value error in Guess");
     } 
@@ -39,6 +44,10 @@ void Guess(
 }
 
 
+/*
+Guess the AES KEY based on the padding oracle's responses.
+TODO: explain details
+*/
 CypherData Fuzz(
     std::function<std::string(std::string&)> request, 
     std::vector<std::string>& blocks, 

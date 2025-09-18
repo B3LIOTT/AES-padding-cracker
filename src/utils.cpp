@@ -80,6 +80,7 @@ Args getArgs(int argc, char** argv) {
     return args;
 }
 
+// RESULTS ------------------------------------------------------------------------------------ //
 
 void saveResult(const std::vector<CypherData>& data, const std::string& filename) {
     std::ofstream file(SAVE_DIR+filename, std::ios::binary);
@@ -128,7 +129,7 @@ std::vector<CypherData> loadResult(const std::string& filename, const unsigned i
 
     return data;
 }
-
+// -------------------------------------------------------------------------------------------- //
 
 
 // Hex manipulation
@@ -174,13 +175,7 @@ void ModifyBlock(std::string& block, std::string val, unsigned int& ind) {
     }
 }
 
-void BuildBlocks(
-    std::string& plainText, 
-    std::vector<CypherData>& cypherDataList, 
-    std::vector<std::string>& blocks,
-    unsigned int& nBlocksNeeded, 
-    unsigned int& plainSize
-) {
+
 /*
     recall that C1^D2 = P2
     hence if we want C1^D2 = M
@@ -188,6 +183,14 @@ void BuildBlocks(
     
     add padding to the desired plain text to validate the decryption
 */
+void BuildBlocks(
+    std::string& plainText, 
+    std::vector<CypherData>& cypherDataList, 
+    std::vector<std::string>& blocks,
+    unsigned int& nBlocksNeeded, 
+    unsigned int& plainSize
+) {
+
     unsigned int blockSize = Target::getBlockSize();
     unsigned int padLen = blockSize*nBlocksNeeded - plainSize;
     unsigned int N = blockSize;

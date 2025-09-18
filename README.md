@@ -50,4 +50,4 @@ Example for socket connections:
 # TODO:
 - better error handling, with clean exit
 - Code optimization
-- Hex AND bas64 payload format
+- Hex AND base64 payload format
