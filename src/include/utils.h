@@ -59,5 +59,3 @@ std::string BlocksToCypher(
     const unsigned int& size
 );
 
-std::string GetVal(std::string& str, unsigned int& ind);
-

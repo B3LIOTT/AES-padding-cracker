@@ -292,15 +292,3 @@ std::string BlocksToCypher(
 }
 
 
-std::string GetVal(std::string& str, unsigned int& ind) {
-    if (ind > 0 && ind < str.length()) {
-        std::string val;
-        val.push_back(str[ind-1]);
-        val.push_back(str[ind]);
-
-        return val;
-    }
-
-    throw std::out_of_range("Index error, overflow detected in GetVal"); 
-}
-
