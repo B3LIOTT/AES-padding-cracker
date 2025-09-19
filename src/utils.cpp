@@ -148,21 +148,59 @@ unsigned int HexToInt(const std::string& hexStr) {
     return val;
 }
 
+std::vector<unsigned int> hexStringToBytes(const std::string& hex) {
+    std::vector<unsigned int> bytes;
+    size_t len = hex.length();
+
+    if (len % Target::getBlockSize() != 0) {
+        throw std::runtime_error("Wrong cyphertext size");
+    }
+
+    bytes.reserve(len / 2);
+
+    for (size_t i = 0; i < len; i += 2) {
+        std::string byteString = hex.substr(i, 2); // 2 chars = 1 hex byte
+        unsigned int byte;
+        std::stringstream ss;
+        ss << std::hex << byteString;
+        ss >> byte;
+        bytes.push_back(byte);
+    }
+
+    return bytes;
+}
+
+std::string bytesToHexString(const std::vector<unsigned int>& bytes, bool uppercase = true) {
+    std::ostringstream oss;
+    oss << std::hex << std::setfill('0');
+
+    if (uppercase) oss << std::uppercase;
+
+    for (uint8_t byte : bytes) {
+        oss << std::setw(2) << static_cast<int>(byte);
+    }
+
+    return oss.str();
+}
+
 
 // Blocks manipulation
-std::vector<std::string> GetBlocks(std::string& cypherText) {
-    std::vector<std::string> blocks;
+std::vector<std::vector<unsigned int>> GetBlocks(std::string& cypherText) {
+    std::vector<std::vector<unsigned int>> blocks;
+    const unsigned int len = Target::getBlockSize();
 
-    // first block ok 0x00, useful to decrypt the real first block
-    std::string block(16 * 2, '0');
+    // first block of 0x00, in order to decrypt the first block
+    std::vector<unsigned int> block(len, 0);
     blocks.push_back(block);
     block.clear();
 
-    const unsigned int blockHexLength = Target::getBlockSize() * 2;
-
-    for (size_t i = 0; i < cypherText.length(); i += blockHexLength) {
-        blocks.push_back(cypherText.substr(i, blockHexLength));
+    for (size_t i = 0; i < cypherText.length(); i += len*2) {
+        std::string s = cypherText.substr(i, len * 2);
+        block = hexStringToBytes(s);
+        blocks.push_back(block);
+        block.clear();
     }
+    
     return blocks;
 }
 
@@ -190,7 +228,6 @@ void BuildBlocks(
     unsigned int& nBlocksNeeded, 
     unsigned int& plainSize
 ) {
-
     unsigned int blockSize = Target::getBlockSize();
     unsigned int padLen = blockSize*nBlocksNeeded - plainSize;
     unsigned int N = blockSize;
@@ -235,9 +272,9 @@ std::string BlocksToCypher(std::vector<std::string>& blocks, const unsigned int&
 
 
 std::string BlocksToCypher(
-    std::vector<std::string>& blocks, 
+    std::vector<std::vector<unsigned int>>& blocks, 
     const unsigned int& nBlocks,
-    std::string& newBlock,
+    std::vector<unsigned int>& newBlock,
     unsigned int& k,
     const unsigned int& size
 ) {
@@ -245,9 +282,9 @@ std::string BlocksToCypher(
     unsigned int i;
     for (i=0; i<nBlocks; i++) {
         if (i==k) {
-            cypher += newBlock;
+            cypher += bytesToHexString(newBlock); // TODO: adapter en fonction du format
         } else {
-            cypher += blocks[i];
+            cypher += bytesToHexString(blocks[i]);
         }
     }
 

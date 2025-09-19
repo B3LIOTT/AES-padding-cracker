@@ -22,7 +22,7 @@ std::mutex cdlMutex;
 
 void worker(
     unsigned int k,
-    std::vector<std::string>& blocks, 
+    std::vector<std::vector<unsigned int>>& blocks, 
     std::vector<CypherData>& cypherDataList,
     std::string& msg
 ) {
@@ -30,7 +30,7 @@ void worker(
         Log::error("Not enough blocks to slice in worker " + std::to_string(k));
         exit(1);
     }
-    std::vector<std::string> slice(blocks.begin(), blocks.begin() + (k+2));
+    std::vector<std::vector<unsigned int>> slice(blocks.begin(), blocks.begin() + (k+2));
     CypherData cd;
 
     std::function<std::string(std::string&)> requestFunc;
@@ -112,94 +112,49 @@ int main(int argc, char* argv[]) {
     );
 
     // Build blocks, with a block of 0x00s at the beginning (in order to be able to crack the first block)
-    std::vector<std::string> blocks = GetBlocks(args.cypher);
+    std::vector<std::vector<unsigned int>> blocks = GetBlocks(args.cypher);
     const unsigned int nBlocks = blocks.size()-1; // -1 because we added a block of 0x00s
-    
+
     Log::print("Blocks:");
     unsigned int k;
     for (k=1; k < nBlocks+1; k++) {
-        Log::print(std::to_string(k) + ": " + blocks[k]);
+        std::cout << std::to_string(k) << ": [";
+        for (unsigned int p=0; p < blocks[k].size(); p++) {
+            std::cout << std::to_string(blocks[k][p]) << ',';
+        }
+        std::cout << ']' << std::endl;
     }
-    
+
     std::vector<CypherData> cypherDataList;
     cypherDataList.resize(nBlocks);
-    if (0) { // TODO: list available files and check if a save exists
-        std::string useSave;
-        Log::bingo("Save found! Do you want to use it? (y/n)");
-        std::cin >> useSave;
 
-        if (useSave != "y") {
-            goto attack;
-        }
+    Log::print("\nPress any key to start the attack...\n");
+    std::cin.get();
 
-        try {
-            cypherDataList = loadResult(Target::getUrl(), nBlocks);
-        } catch(const std::exception& e) {
-            Log::error("Error while loading saved data: " + std::string(e.what()));
-            return 1;
-        }
+    std::string msg(nBlocks * Target::getBlockSize(), '\0');
 
-    } else {
-
-    attack:
-        Log::print("\nPress any key to start the attack...\n");
-        std::cin.get();
-
-        std::string msg(nBlocks*args.blockSize, '\0');
-
-        // create threads, one for each block
-        Log::print("Creating one thread per block...\n");
-        std::vector<std::thread> threads;
-        for (k=0; k < nBlocks; k++) {
-            threads.emplace_back(
-                worker, 
-                k, 
-                std::ref(blocks),
-                std::ref(cypherDataList), 
-                std::ref(msg)
-            );
-        }
-
-        // wait threads
-        for (auto& t : threads) {
-            t.join();
-        }
-
-        Log::bingo("Decrypted message: " + msg);
-
-        Log::info("Saving results in saves/");
-        saveResult(cypherDataList, Target::getUrl());
+    // create threads, one for each block
+    Log::print("Creating one thread per block...\n");
+    std::vector<std::thread> threads;
+    for (k=0; k < nBlocks; k++) {
+        threads.emplace_back(
+            worker, 
+            k, 
+            std::ref(blocks),
+            std::ref(cypherDataList), 
+            std::ref(msg)
+        );
     }
 
-    // ask to encrypt a chosen message
-    std::string userInput;
-    unsigned int plainSize;
-    unsigned int nBlocksNeeded;
-    std::vector<std::string> newBlocks;
-    std::string newCypher;
-
-    while (true) {
-        Log::print("Do you want to craft a custom cypher? Enter your plaintext or type 'q' to quit: ");
-        std::cin >> userInput;
-        
-        if (userInput == "q") {
-            Log::print("Bye");
-            break;
-        }
-
-        plainSize = userInput.size();
-        nBlocksNeeded = (plainSize + Target::getBlockSize() - 1) / Target::getBlockSize();
-        if (nBlocksNeeded < nBlocks) {
-            BuildBlocks(userInput, cypherDataList, newBlocks, nBlocksNeeded, plainSize);
-            newBlocks.push_back(blocks[nBlocksNeeded]);
-            newCypher = BlocksToCypher(newBlocks, nBlocksNeeded+1);
-            Log::bingo("New cypher text: " + newCypher);
-        } else {
-            Log::warning("Can't craft this message with previous cracked data because it's too long.");
-        }
-
-        newBlocks.clear();
+    // wait threads
+    for (auto& t : threads) {
+        t.join();
     }
+
+    Log::bingo("Decrypted message: " + msg);
+
+    Log::info("Saving results in saves/");
+    saveResult(cypherDataList, Target::getUrl());
 
     return 0;
 }

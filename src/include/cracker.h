@@ -13,7 +13,7 @@ bool PaddingError(std::string& response);
 
 
 void Guess(
-    const std::string& hexC, 
+    const unsigned int& C, 
     const unsigned int& X, 
     const unsigned int& pad,
     CypherData& cypherData
@@ -22,7 +22,7 @@ void Guess(
 
 CypherData Fuzz(
     std::function<std::string(std::string&)> request, 
-    std::vector<std::string>& blocks, 
+    std::vector<std::vector<unsigned int>>& blocks, 
     unsigned int k
 );
 

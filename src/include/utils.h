@@ -33,9 +33,9 @@ unsigned int HexToInt(const std::string& hex);
 
 
 // Blocks manipulation
-std::string BlocksToCypher(std::vector<std::string>& blocks, const unsigned int& nBlocks);
+std::string BlocksToCypher(std::vector<std::vector<unsigned int>>& blocks, const unsigned int& nBlocks);
 
-std::vector<std::string> GetBlocks(std::string& cypherText);
+std::vector<std::vector<unsigned int>> GetBlocks(std::string& cypherText);
 
 void ModifyBlock(
     std::string& block, 
@@ -52,9 +52,9 @@ void BuildBlocks(
 );
 
 std::string BlocksToCypher(
-    std::vector<std::string>& blocks, 
+    std::vector<std::vector<unsigned int>>& blocks, 
     const unsigned int& nBlocks,
-    std::string& newBlock,
+    std::vector<unsigned int>& newBlock,
     unsigned int& k,
     const unsigned int& size
 );
