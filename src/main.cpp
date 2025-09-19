@@ -111,18 +111,19 @@ int main(int argc, char* argv[]) {
         args.blockSize
     );
 
+    // Build blocks, with a block of 0x00s at the beginning (in order to be able to crack the first block)
     std::vector<std::string> blocks = GetBlocks(args.cypher);
     const unsigned int nBlocks = blocks.size()-1; // -1 because we added a block of 0x00s
     
     Log::print("Blocks:");
     unsigned int k;
-    for (k=1; k<nBlocks+1;k++) {
+    for (k=1; k < nBlocks+1; k++) {
         Log::print(std::to_string(k) + ": " + blocks[k]);
     }
-
+    
     std::vector<CypherData> cypherDataList;
     cypherDataList.resize(nBlocks);
-    if (1) {
+    if (0) { // TODO: list available files and check if a save exists
         std::string useSave;
         Log::bingo("Save found! Do you want to use it? (y/n)");
         std::cin >> useSave;
@@ -149,7 +150,7 @@ int main(int argc, char* argv[]) {
         // create threads, one for each block
         Log::print("Creating one thread per block...\n");
         std::vector<std::thread> threads;
-        for (k=0; k<nBlocks;k++) {
+        for (k=0; k < nBlocks; k++) {
             threads.emplace_back(
                 worker, 
                 k, 
