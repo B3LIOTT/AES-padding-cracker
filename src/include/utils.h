@@ -15,6 +15,7 @@ struct Args {
     unsigned int port;
     std::string data;
     std::string cypher;
+    std::string format;
     unsigned int blockSize;
     std::string paddingError;
 };
@@ -31,10 +32,10 @@ std::string IntToHex(unsigned int& val);
 
 unsigned int HexToInt(const std::string& hex);
 
+std::string BytesToHexString(const std::vector<unsigned int>& bytes);
+
 
 // Blocks manipulation
-std::string BlocksToCypher(std::vector<std::vector<unsigned int>>& blocks, const unsigned int& nBlocks);
-
 std::vector<std::vector<unsigned int>> GetBlocks(std::string& cypherText);
 
 void ModifyBlock(
@@ -56,6 +57,7 @@ std::string BlocksToCypher(
     const unsigned int& nBlocks,
     std::vector<unsigned int>& newBlock,
     unsigned int& k,
-    const unsigned int& size
+    const unsigned int& size,
+    std::function<std::string(const std::vector<unsigned int>&)> convert
 );
 

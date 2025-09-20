@@ -50,7 +50,8 @@ TODO: explain details
 CypherData Fuzz(
     std::function<std::string(std::string&)> request, 
     std::vector<std::vector<unsigned int>>& blocks, 
-    unsigned int k
+    unsigned int k,
+    std::function<std::string(const std::vector<unsigned int>&)> convert
 ) {
     const unsigned int blockSize = Target::getBlockSize();
     CypherData cypherData;
@@ -90,7 +91,7 @@ CypherData Fuzz(
             for (val = 0; val < 256; val++) {
                 std::vector<unsigned int> newBlock(blockCopy);
                 newBlock[j] = val;
-                newCypher = BlocksToCypher(blocks, nBlocks, newBlock, k, blockSize);
+                newCypher = BlocksToCypher(blocks, nBlocks, newBlock, k, blockSize, convert);
                 
                 // Senb this new cyphertext to the oracle
                 try {

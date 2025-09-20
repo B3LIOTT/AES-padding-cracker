@@ -28,6 +28,7 @@ Args getArgs(int argc, char** argv) {
             ("p,port", "Port number for SOCKET method", cxxopts::value<unsigned int>()->default_value("0"))
             ("d,data", "Data to send (GET, POST or COOKIE param depending on the choosen method)", cxxopts::value<std::string>()->default_value(""))
             ("c,cypher", "Cypher text", cxxopts::value<std::string>())
+            ("f,format", "Cypher text format (base64, hex)", cxxopts::value<std::string>())
             ("b,block-size", "Block size (8,16,32,64)", cxxopts::value<unsigned int>())
             ("e,padding-error", "Padding error text", cxxopts::value<std::string>())
             ("h,help", "Print usage");
@@ -40,9 +41,9 @@ Args getArgs(int argc, char** argv) {
         }
 
         // verify args
-        if (!result.count("url") || !result.count("method") || !result.count("cypher") ||
+        if (!result.count("url") || !result.count("method") || !result.count("cypher") || !result.count("format") ||
             !result.count("block-size") || !result.count("padding-error")) {
-            throw std::runtime_error("Missing required arguments");
+            throw std::runtime_error("Missing required arguments, use -h option to see details");
         }
 
         args.blockSize = result["block-size"].as<unsigned int>();
@@ -53,6 +54,11 @@ Args getArgs(int argc, char** argv) {
         args.cypher = result["cypher"].as<std::string>();
         if (args.cypher.size()%args.blockSize != 0) {
             throw std::runtime_error("Your cyphertext is not a multiple of the given block size");
+        }
+
+        args.format = result["format"].as<std::string>();
+        if (args.format != "base64" && args.format != "hex") {
+            throw std::runtime_error("Format must be base64 or hex");
         }
 
         args.url = result["url"].as<std::string>();
@@ -170,11 +176,10 @@ std::vector<unsigned int> hexStringToBytes(const std::string& hex) {
     return bytes;
 }
 
-std::string bytesToHexString(const std::vector<unsigned int>& bytes, bool uppercase = true) {
+std::string BytesToHexString(const std::vector<unsigned int>& bytes) {
     std::ostringstream oss;
     oss << std::hex << std::setfill('0');
-
-    if (uppercase) oss << std::uppercase;
+    oss << std::uppercase;
 
     for (uint8_t byte : bytes) {
         oss << std::setw(2) << static_cast<int>(byte);
@@ -196,7 +201,7 @@ std::vector<std::vector<unsigned int>> GetBlocks(std::string& cypherText) {
 
     for (size_t i = 0; i < cypherText.length(); i += len*2) {
         std::string s = cypherText.substr(i, len * 2);
-        block = hexStringToBytes(s);
+        block = hexStringToBytes(s); // TODO: adapter en fonction du format
         blocks.push_back(block);
         block.clear();
     }
@@ -214,6 +219,7 @@ void ModifyBlock(std::string& block, std::string val, unsigned int& ind) {
 }
 
 
+// TODO: change it 
 /*
     recall that C1^D2 = P2
     hence if we want C1^D2 = M
@@ -260,31 +266,21 @@ void BuildBlocks(
 }
 
 
-std::string BlocksToCypher(std::vector<std::string>& blocks, const unsigned int& nBlocks) {
-    std::string cypher = "";
-    unsigned int i;
-    for (i=0; i<nBlocks; i++) {
-        cypher += blocks[i];
-    }
-
-    return cypher;
-}
-
-
 std::string BlocksToCypher(
     std::vector<std::vector<unsigned int>>& blocks, 
     const unsigned int& nBlocks,
     std::vector<unsigned int>& newBlock,
     unsigned int& k,
-    const unsigned int& size
+    const unsigned int& size,
+    std::function<std::string(const std::vector<unsigned int>&)> convert
 ) {
     std::string cypher = "";
     unsigned int i;
     for (i=0; i<nBlocks; i++) {
         if (i==k) {
-            cypher += bytesToHexString(newBlock); // TODO: adapter en fonction du format
+            cypher += convert(newBlock); // TODO: adapter en fonction du format
         } else {
-            cypher += bytesToHexString(blocks[i]);
+            cypher += convert(blocks[i]);
         }
     }
 

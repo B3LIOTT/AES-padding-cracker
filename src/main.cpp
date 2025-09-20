@@ -16,6 +16,10 @@
 #include "include/log.h"
 
 
+#define BASE_64 "base64"
+#define HEX "hex"
+
+
 std::mutex msgMutex;
 std::mutex cdlMutex;
 
@@ -34,6 +38,17 @@ void worker(
     CypherData cd;
 
     std::function<std::string(std::string&)> requestFunc;
+    std::function<std::string(const std::vector<unsigned int>&)> convertFunc;
+
+    // TODO: in main, not here
+    if (Target::getFormat() == HEX) {
+        convertFunc = BytesToHexString;
+    }
+    else if (Target::getFormat() == BASE_64) {
+        throw std::runtime_error("Not implemented yet");
+    } else {
+        throw std::runtime_error("Unknown format");
+    }
 
     if (Target::getMethod() == SOCKET) {
         SocketClient client(
@@ -44,7 +59,7 @@ void worker(
             return client.socketRequest(msg);
         };
         try {
-            cd = Fuzz(requestFunc, slice, k);
+            cd = Fuzz(requestFunc, slice, k, convertFunc);
         } catch (const std::exception& e) {
             Log::error(e.what());
         }
@@ -66,7 +81,7 @@ void worker(
         }
        
         try {
-            cd = Fuzz(requestFunc, slice, k);
+            cd = Fuzz(requestFunc, slice, k, convertFunc);
         } catch (const std::exception& e) {
             Log::error(e.what());
             CurlCleanup(curl);
@@ -97,6 +112,7 @@ int main(int argc, char* argv[]) {
     Log::print("Method: " + args.method);
     if (args.method!=SOCKET) Log::print("Data: " + args.data);
     Log::print("Cypher: " + args.cypher);
+    Log::print("Cypher format: " + args.format);
     Log::print("Block size: " + std::to_string(args.blockSize));
     Log::print("Padding error: " + args.paddingError);
     std::cout << std::endl;
@@ -106,7 +122,8 @@ int main(int argc, char* argv[]) {
         args.url,
         args.method,
         args.port,
-        args.data,
+        args.data,  // TODO: rename to "param" ?
+        args.format,
         args.paddingError,
         args.blockSize
     );

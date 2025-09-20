@@ -19,6 +19,7 @@ class Target {
         static const std::string& getMethod();
         static const unsigned int& getPort();
         static const std::string& getData();
+        static const std::string& getFormat();
         static const std::string& getErrMsg();
         static const unsigned int& getBlockSize();
 
@@ -28,6 +29,7 @@ class Target {
                               const std::string& defaultMethod, 
                               const unsigned int& defaultPort,
                               const std::string& defaultGetParam,
+                              const std::string& defaultFormat,
                               const std::string& defaultErrMsg,
                               const unsigned int& defaultBlockSize);
         
@@ -36,6 +38,7 @@ class Target {
         static std::string method;
         static unsigned int port;
         static std::string data;
+        static std::string format;
         static std::string errMsg;
         static unsigned int blockSize;
     };

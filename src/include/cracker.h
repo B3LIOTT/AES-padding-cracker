@@ -23,6 +23,7 @@ void Guess(
 CypherData Fuzz(
     std::function<std::string(std::string&)> request, 
     std::vector<std::vector<unsigned int>>& blocks, 
-    unsigned int k
+    unsigned int k,
+    std::function<std::string(const std::vector<unsigned int>&)> convert
 );
 
