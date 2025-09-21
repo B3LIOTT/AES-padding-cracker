@@ -4,6 +4,16 @@
 #include <vector> 
 
 
+#define BASE_64 "base64"
+#define HEX "hex"
+
+const std::string base64_chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz"
+    "0123456789+/";
+
+
+
 // forward struct
 struct CypherData;
 
@@ -27,37 +37,15 @@ void saveResult(const std::vector<CypherData>& data, const std::string& filename
 std::vector<CypherData> loadResult(const std::string& filename, const unsigned int& nBlocks);
 
 
-// Hex manipulation
+// Data manipulation
 std::string IntToHex(unsigned int& val);
 
 unsigned int HexToInt(const std::string& hex);
 
+std::vector<unsigned int> HexStringToBytes(const std::string& hex);
+
 std::string BytesToHexString(const std::vector<unsigned int>& bytes);
 
+std::string BytesToBase64(const std::vector<unsigned int>& bytes);
 
-// Blocks manipulation
-std::vector<std::vector<unsigned int>> GetBlocks(std::string& cypherText);
-
-void ModifyBlock(
-    std::string& block, 
-    std::string val, 
-    unsigned int& ind
-);
-
-void BuildBlocks(
-    std::string& plainText, 
-    std::vector<CypherData>& cypherDataList, 
-    std::vector<std::string>& newBlocks,
-    unsigned int& nBlocksNeeded, 
-    unsigned int& plainSize
-);
-
-std::string BlocksToCypher(
-    std::vector<std::vector<unsigned int>>& blocks, 
-    const unsigned int& nBlocks,
-    std::vector<unsigned int>& newBlock,
-    unsigned int& k,
-    const unsigned int& size,
-    std::function<std::string(const std::vector<unsigned int>&)> convert
-);
-
+std::vector<unsigned int> Base64ToBytes(const std::string& b64);

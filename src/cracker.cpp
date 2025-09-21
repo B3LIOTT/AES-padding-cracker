@@ -7,6 +7,7 @@
 #include "include/network.h"
 #include "include/cracker.h"
 #include "include/target.h"
+#include "include/blocks.h"
 #include "include/common.h"
 #include "include/utils.h"
 #include "include/log.h"
@@ -50,8 +51,7 @@ TODO: explain details
 CypherData Fuzz(
     std::function<std::string(std::string&)> request, 
     std::vector<std::vector<unsigned int>>& blocks, 
-    unsigned int k,
-    std::function<std::string(const std::vector<unsigned int>&)> convert
+    unsigned int k
 ) {
     const unsigned int blockSize = Target::getBlockSize();
     CypherData cypherData;
@@ -73,7 +73,7 @@ CypherData Fuzz(
         unsigned int j;
 
         // For every byte, in reverse
-        for (j=blockSize-1; j>0 && j<blockSize; j--) {
+        for (j=blockSize-1; j>=0 && j<blockSize; j--) {
             std::vector<unsigned int> blockCopy(block);
 
             // if padding is at least 0x02
@@ -91,7 +91,7 @@ CypherData Fuzz(
             for (val = 0; val < 256; val++) {
                 std::vector<unsigned int> newBlock(blockCopy);
                 newBlock[j] = val;
-                newCypher = BlocksToCypher(blocks, nBlocks, newBlock, k, blockSize, convert);
+                newCypher = BlocksToCypher(blocks, nBlocks, newBlock, k, blockSize);
                 
                 // Senb this new cyphertext to the oracle
                 try {

@@ -12,12 +12,9 @@
 #include "include/cracker.h"
 #include "include/common.h"
 #include "include/target.h"
+#include "include/blocks.h"
 #include "include/utils.h"
 #include "include/log.h"
-
-
-#define BASE_64 "base64"
-#define HEX "hex"
 
 
 std::mutex msgMutex;
@@ -25,10 +22,10 @@ std::mutex cdlMutex;
 
 
 void worker(
-    unsigned int k,
     std::vector<std::vector<unsigned int>>& blocks, 
     std::vector<CypherData>& cypherDataList,
-    std::string& msg
+    std::string& msg,
+    unsigned int k
 ) {
     if (blocks.size() < (k+1)) {
         Log::error("Not enough blocks to slice in worker " + std::to_string(k));
@@ -36,19 +33,8 @@ void worker(
     }
     std::vector<std::vector<unsigned int>> slice(blocks.begin(), blocks.begin() + (k+2));
     CypherData cd;
-
+    
     std::function<std::string(std::string&)> requestFunc;
-    std::function<std::string(const std::vector<unsigned int>&)> convertFunc;
-
-    // TODO: in main, not here
-    if (Target::getFormat() == HEX) {
-        convertFunc = BytesToHexString;
-    }
-    else if (Target::getFormat() == BASE_64) {
-        throw std::runtime_error("Not implemented yet");
-    } else {
-        throw std::runtime_error("Unknown format");
-    }
 
     if (Target::getMethod() == SOCKET) {
         SocketClient client(
@@ -58,8 +44,9 @@ void worker(
         requestFunc = [&client](std::string& msg) {
             return client.socketRequest(msg);
         };
+
         try {
-            cd = Fuzz(requestFunc, slice, k, convertFunc);
+            cd = Fuzz(requestFunc, slice, k);
         } catch (const std::exception& e) {
             Log::error(e.what());
         }
@@ -79,15 +66,14 @@ void worker(
                 return PostRequest(curl, Target::getUrl(), Target::getPayload(msg));
             };
         }
-       
         try {
-            cd = Fuzz(requestFunc, slice, k, convertFunc);
+            cd = Fuzz(requestFunc, slice, k);
         } catch (const std::exception& e) {
             Log::error(e.what());
             CurlCleanup(curl);
         }
     }
-    
+
     // Lock the access to cypherDataList
     {
         std::lock_guard<std::mutex> lock(cdlMutex);
@@ -129,7 +115,13 @@ int main(int argc, char* argv[]) {
     );
 
     // Build blocks, with a block of 0x00s at the beginning (in order to be able to crack the first block)
-    std::vector<std::vector<unsigned int>> blocks = GetBlocks(args.cypher);
+    std::vector<std::vector<unsigned int>> blocks;
+    try {
+        blocks = GetBlocks(args.cypher);
+    } catch (const std::exception& e) {
+        Log::error(e.what());
+        exit(1);
+    }
     const unsigned int nBlocks = blocks.size()-1; // -1 because we added a block of 0x00s
 
     Log::print("Blocks:");
@@ -156,10 +148,10 @@ int main(int argc, char* argv[]) {
     for (k=0; k < nBlocks; k++) {
         threads.emplace_back(
             worker, 
-            k, 
             std::ref(blocks),
             std::ref(cypherDataList), 
-            std::ref(msg)
+            std::ref(msg),
+            k
         );
     }
 

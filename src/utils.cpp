@@ -7,7 +7,6 @@
 
 
 #include "cxxopts/cxxopts.hpp"
-#include "include/target.h"
 #include "include/common.h"
 #include "include/utils.h"
 #include "include/log.h"
@@ -52,10 +51,6 @@ Args getArgs(int argc, char** argv) {
         }
 
         args.cypher = result["cypher"].as<std::string>();
-        if (args.cypher.size()%args.blockSize != 0) {
-            throw std::runtime_error("Your cyphertext is not a multiple of the given block size");
-        }
-
         args.format = result["format"].as<std::string>();
         if (args.format != "base64" && args.format != "hex") {
             throw std::runtime_error("Format must be base64 or hex");
@@ -154,13 +149,9 @@ unsigned int HexToInt(const std::string& hexStr) {
     return val;
 }
 
-std::vector<unsigned int> hexStringToBytes(const std::string& hex) {
+std::vector<unsigned int> HexStringToBytes(const std::string& hex) {
     std::vector<unsigned int> bytes;
     size_t len = hex.length();
-
-    if (len % Target::getBlockSize() != 0) {
-        throw std::runtime_error("Wrong cyphertext size");
-    }
 
     bytes.reserve(len / 2);
 
@@ -176,6 +167,8 @@ std::vector<unsigned int> hexStringToBytes(const std::string& hex) {
     return bytes;
 }
 
+
+// Base64 manipulation
 std::string BytesToHexString(const std::vector<unsigned int>& bytes) {
     std::ostringstream oss;
     oss << std::hex << std::setfill('0');
@@ -188,103 +181,44 @@ std::string BytesToHexString(const std::vector<unsigned int>& bytes) {
     return oss.str();
 }
 
-
-// Blocks manipulation
-std::vector<std::vector<unsigned int>> GetBlocks(std::string& cypherText) {
-    std::vector<std::vector<unsigned int>> blocks;
-    const unsigned int len = Target::getBlockSize();
-
-    // first block of 0x00, in order to decrypt the first block
-    std::vector<unsigned int> block(len, 0);
-    blocks.push_back(block);
-    block.clear();
-
-    for (size_t i = 0; i < cypherText.length(); i += len*2) {
-        std::string s = cypherText.substr(i, len * 2);
-        block = hexStringToBytes(s); // TODO: adapter en fonction du format
-        blocks.push_back(block);
-        block.clear();
-    }
-    
-    return blocks;
-}
-
-void ModifyBlock(std::string& block, std::string val, unsigned int& ind) {
-    if (ind < 2*Target::getBlockSize()) {
-        block[ind-1] = val[0];
-        block[ind] = val[1];
-    } else {
-        throw std::out_of_range("Index error, overflow detected in ModifyBlock");
-    }
-}
-
-
-// TODO: change it 
-/*
-    recall that C1^D2 = P2
-    hence if we want C1^D2 = M
-    we build C1 as C1 = M^D2
-    
-    add padding to the desired plain text to validate the decryption
-*/
-void BuildBlocks(
-    std::string& plainText, 
-    std::vector<CypherData>& cypherDataList, 
-    std::vector<std::string>& blocks,
-    unsigned int& nBlocksNeeded, 
-    unsigned int& plainSize
-) {
-    unsigned int blockSize = Target::getBlockSize();
-    unsigned int padLen = blockSize*nBlocksNeeded - plainSize;
-    unsigned int N = blockSize;
-    std::string block = "";
-
-    unsigned int k;
-    unsigned int j;
-    unsigned int i;
-    unsigned int ascii;
-
-    for (k=0; k<nBlocksNeeded; k++) {
-        if (k == nBlocksNeeded-1) {
-            N = plainSize - blockSize*k;
-        }
-        for (i=0; i<N; i++) {
-            ascii = static_cast<unsigned int>(plainText[blockSize*k+i]) ^ cypherDataList[k].Dn[i];
-            block += IntToHex(ascii);
-        }
-
-        // if it is le last block, we have to pad the end of it (when the message lenght isn't a multiple of 16)
-        if (k == nBlocksNeeded-1) { 
-            for (j=N; j<N+padLen; j++) {
-                ascii = padLen ^ cypherDataList[k].Dn[j];
-                block += IntToHex(ascii);
-            }
-        }
-
-        blocks.push_back(block);
-    }
-}
-
-
-std::string BlocksToCypher(
-    std::vector<std::vector<unsigned int>>& blocks, 
-    const unsigned int& nBlocks,
-    std::vector<unsigned int>& newBlock,
-    unsigned int& k,
-    const unsigned int& size,
-    std::function<std::string(const std::vector<unsigned int>&)> convert
-) {
-    std::string cypher = "";
-    unsigned int i;
-    for (i=0; i<nBlocks; i++) {
-        if (i==k) {
-            cypher += convert(newBlock); // TODO: adapter en fonction du format
-        } else {
-            cypher += convert(blocks[i]);
+std::string BytesToBase64(const std::vector<unsigned int>& bytes) {
+    std::string encoded;
+    int val = 0;
+    int valb = -6;
+    for (unsigned int c : bytes) {
+        val = (val << 8) + c;
+        valb += 8;
+        while (valb >= 0) {
+            encoded.push_back(base64_chars[(val >> valb) & 0x3F]);
+            valb -= 6;
         }
     }
-
-    return cypher;
+    if (valb > -6)
+        encoded.push_back(base64_chars[((val << 8) >> (valb + 8)) & 0x3F]);
+    while (encoded.size() % 4)
+        encoded.push_back('=');
+    return encoded;
 }
 
+std::vector<unsigned int> Base64ToBytes(const std::string& b64) {
+    std::vector<int> T(256, -1);
+    for (int i = 0; i < 64; i++)
+        T[base64_chars[i]] = i;
+
+    Log::print(std::to_string(T[0]));
+
+    std::vector<unsigned int> decoded;
+    int val = 0;
+    int valb = -8;
+    for (unsigned int c : b64) {
+        if (T[c] == -1) break;
+        val = (val << 6) + T[c];
+        valb += 6;
+        if (valb >= 0) {
+            decoded.push_back((val >> valb) & 0xFF);
+            valb -= 8;
+        }
+    }
+    return decoded;
+}
 

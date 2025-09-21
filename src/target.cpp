@@ -1,6 +1,9 @@
+#include <vector>
 #include <string>
+#include <functional>
 
 #include "include/target.h"
+#include "include/utils.h"
 
 
 std::string Target::url;
@@ -10,6 +13,8 @@ std::string Target::data;
 std::string Target::format;
 std::string Target::errMsg;
 unsigned int Target::blockSize;
+std::function<std::vector<unsigned int>(std::string&)> Target::cypherToBytes;
+std::function<std::string(std::vector<unsigned int>&)> Target::bytesToCypher;
 
 const std::string& Target::getUrl() {
     return url;
@@ -57,6 +62,15 @@ const std::string Target::getPayload(std::string& cypher) {
     //}
 }
 
+const std::vector<unsigned int> Target::getBytes(std::string& cypher) {
+    return cypherToBytes(cypher);
+}
+
+const std::string Target::getCypher(std::vector<unsigned int>& bytes) {
+    return bytesToCypher(bytes);
+}
+
+
 
 void Target::initialize(const std::string& defaultUrl, 
                         const std::string& defaultMethod, 
@@ -72,4 +86,14 @@ void Target::initialize(const std::string& defaultUrl,
     format = defaultFormat;
     errMsg = defaultErrMsg;
     blockSize = defaultBlockSize;
+
+    if (Target::getFormat() == HEX) {
+        bytesToCypher = BytesToHexString;
+        cypherToBytes = HexStringToBytes;
+    }
+    else {
+        bytesToCypher = BytesToBase64;
+        cypherToBytes = Base64ToBytes;
+    }
+    
 }

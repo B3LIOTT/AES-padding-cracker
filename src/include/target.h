@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-
+#include <functional>
 
 #define COOKIES "COOKIES"
 #define SOCKET "SOCKET"
@@ -22,7 +22,8 @@ class Target {
         static const std::string& getFormat();
         static const std::string& getErrMsg();
         static const unsigned int& getBlockSize();
-
+        static const std::vector<unsigned int> getBytes(std::string& cypher);
+        static const std::string getCypher(std::vector<unsigned int>& bytes);
         static const std::string getPayload(std::string& cypher);
         
         static void initialize(const std::string& defaultUrl, 
@@ -41,4 +42,6 @@ class Target {
         static std::string format;
         static std::string errMsg;
         static unsigned int blockSize;
+        static std::function<std::vector<unsigned int>(std::string&)> cypherToBytes;
+        static std::function<std::string(std::vector<unsigned int>&)> bytesToCypher;
     };
