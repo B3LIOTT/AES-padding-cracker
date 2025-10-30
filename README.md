@@ -30,24 +30,25 @@ Usage:
 
 Example for GET requests:
 ```bash
-./AES-padding-cracker -u "http://example.com/index.php" -m GET -d "c=" -b 16 -c 59873749DC0D3A4ACC7F19D711853685EFCDBFECDF85D6B3AF6171F793CC20B4 -e "Padding Error"
+./AES-padding-cracker -u "http://example.com/index.php" -m GET -d "c=" -b 16 -c 59873749DC0D3A4ACC7F19D711853685EFCDBFECDF85D6B3AF6171F793CC20B4 -e "Padding Error" -f hex
 ```
 
 Example for POST requests:
 ```bash
-./AES-padding-cracker -u "http://example.com/index.php" -m POST -d "param1=123&cypher=*" -b 16 -c 59873749DC0D3A4ACC7F19D711853685EFCDBFECDF85D6B3AF6171F793CC20B4 -e "Padding Error"
+./AES-padding-cracker -u "http://example.com/index.php" -m POST -d "param1=123&cypher=*" -b 16 -c 59873749DC0D3A4ACC7F19D711853685EFCDBFECDF85D6B3AF6171F793CC20B4 -e "Padding Error" -f hex
 ```
 The '*' char tells the script to replace it by the cyphertext.
 
 
 Example for socket connections:
 ```bash
-./AES-padding-cracker -u "example.com" -p 12345 -m "SOCKET" -b 16 -c "BC16542433100D9522DC3B6428D4FF5F7FC67B4994323C47ED09F185C3CE7A2E" -e "Padding Error"
+./AES-padding-cracker -u "example.com" -p 12345 -m "SOCKET" -b 16 -c "BC16542433100D9522DC3B6428D4FF5F7FC67B4994323C47ED09F185C3CE7A2E" -e "Padding Error" -f hex
 ```
 
 
 
 # TODO:
+- Save and load results
+- Fix base64 format which doesn't work
 - better error handling, with clean exit
 - Code optimization
-- Hex AND base64 payload format

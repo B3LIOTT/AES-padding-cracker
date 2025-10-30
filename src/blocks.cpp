@@ -1,8 +1,10 @@
 #include <string>
 #include <vector>
-#include <stdexcept> 
+#include <stdexcept>
 
+#include "include/common.h"
 #include "include/target.h"
+#include "include/log.h"
 
 
 // Blocks manipulation
@@ -36,18 +38,18 @@ std::vector<std::vector<unsigned int>> GetBlocks(std::string& cypherText) {
     we build C1 as C1 = M^D2
     
     add padding to the desired plain text to validate the decryption
-
-void BuildBlocks(
+*/
+std::string BuildCipherFromPlain(
     std::string& plainText, 
     std::vector<CypherData>& cypherDataList, 
-    std::vector<std::string>& blocks,
+    std::vector<unsigned int>& lastBlock,
     unsigned int& nBlocksNeeded, 
     unsigned int& plainSize
 ) {
     unsigned int blockSize = Target::getBlockSize();
     unsigned int padLen = blockSize*nBlocksNeeded - plainSize;
     unsigned int N = blockSize;
-    std::string block = "";
+    std::vector<unsigned int> cipherBytes;
 
     unsigned int k;
     unsigned int j;
@@ -55,26 +57,31 @@ void BuildBlocks(
     unsigned int ascii;
 
     for (k=0; k<nBlocksNeeded; k++) {
-        if (k == nBlocksNeeded-1) {
+        // for the last block, we have to consider the case where the plain text size isn't a multiple of block size
+        if (k == nBlocksNeeded-1) { 
             N = plainSize - blockSize*k;
         }
         for (i=0; i<N; i++) {
-            ascii = static_cast<unsigned int>(plainText[blockSize*k+i]) ^ cypherDataList[k].Dn[i];
-            block += IntToHex(ascii);
+            ascii = static_cast<unsigned int>(plainText[blockSize*k+i]) ^ cypherDataList[k].Dn[i];            
+            cipherBytes.push_back(ascii);
         }
 
         // if it is le last block, we have to pad the end of it (when the message lenght isn't a multiple of 16)
         if (k == nBlocksNeeded-1) { 
             for (j=N; j<N+padLen; j++) {
                 ascii = padLen ^ cypherDataList[k].Dn[j];
-                block += IntToHex(ascii);
+                cipherBytes.push_back(ascii);
             }
         }
-
-        blocks.push_back(block);
     }
+
+    // append the last block
+    for (i=0; i<blockSize; i++) {
+        cipherBytes.push_back(lastBlock[i]);
+    }
+
+    return Target::getCypher(cipherBytes);
 }
-    */
 
 
 std::string BlocksToCypher(
@@ -96,5 +103,4 @@ std::string BlocksToCypher(
 
     return Target::getCypher(cypherBytes);
 }
-
 

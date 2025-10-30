@@ -9,10 +9,10 @@ struct CypherData;
 // Blocks manipulation
 std::vector<std::vector<unsigned int>> GetBlocks(std::string& cypherText);
 
-void BuildBlocks(
+std::string BuildCipherFromPlain(
     std::string& plainText, 
     std::vector<CypherData>& cypherDataList, 
-    std::vector<std::string>& newBlocks,
+    std::vector<unsigned int>& lastBlock,
     unsigned int& nBlocksNeeded, 
     unsigned int& plainSize
 );

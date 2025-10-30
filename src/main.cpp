@@ -155,15 +155,40 @@ int main(int argc, char* argv[]) {
         );
     }
 
-    // wait threads
+    // wait threads to finish
     for (auto& t : threads) {
         t.join();
     }
 
     Log::bingo("Decrypted message: " + msg);
 
-    Log::info("Saving results in saves/");
-    saveResult(cypherDataList, Target::getUrl());
+    // Log::info("Saving results in saves/");
+    // saveResult(cypherDataList, Target::getUrl());
+
+    // ask to encrypt a chosen message
+    std::string userInput;
+    unsigned int plainSize;
+    unsigned int nBlocksNeeded;
+    std::string newCipher;
+
+    while (true) {
+        Log::print("Do you want to craft a custom cypher? Enter your plaintext or type 'q' to quit: ");
+        std::cin >> userInput;
+        
+        if (userInput == "q") {
+            Log::print("Bye");
+            break;
+        }
+
+        plainSize = userInput.size();
+        nBlocksNeeded = (plainSize + Target::getBlockSize() - 1) / Target::getBlockSize();
+        if (nBlocksNeeded < nBlocks) {
+            newCipher = BuildCipherFromPlain(userInput, cypherDataList, blocks[nBlocksNeeded], nBlocksNeeded, plainSize);
+            Log::bingo("New cypher text: " + newCipher);
+        } else {
+            Log::warning("Can't craft this message with previous cracked data because it's too long.");
+        }
+    }
 
     return 0;
 }

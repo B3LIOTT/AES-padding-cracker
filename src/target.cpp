@@ -54,7 +54,7 @@ const std::string Target::getPayload(std::string& cypher) {
     }
 
     // if (method == POST) {
-        size_t pos = data.find(POST_R);
+        unsigned int pos = data.find(POST_R);
         if (pos != std::string::npos) { // found
             data.replace(pos, 1, cypher);
         }
