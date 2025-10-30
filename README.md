@@ -9,7 +9,7 @@ Thanks to [cxxopts](https://github.com/jarro2783/cxxopts) I saved a lot of time 
 
 # Usage
 First, install required dependences and compile the project:
-```bash
+```bashé²
 sudo apt install libcurl4-openssl-dev
 make
 ```
@@ -20,10 +20,11 @@ Usage:
   oracle_padding_attack [OPTION...]
 
   -u, --url arg            Url pointing to the oracle
-  -m, --method arg         SOCKET, GET or POST method
+  -m, --method arg         SOCKET, GET, POST or COOKIES method
   -p, --port arg           Port number for SOCKET method (default: 0)
-  -d, --data arg           Data to send (default: "")
+  -d, --data arg           Data to send (GET, POST or COOKIE param depending on the choosen method) (default: "")
   -c, --cypher arg         Cypher text
+  -f, --format arg         Cypher text format (base64, hex)
   -b, --block-size arg     Block size (8,16,32,64)
   -e, --padding-error arg  Padding error text
   -h, --help               Print usage
