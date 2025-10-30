@@ -1,15 +1,16 @@
 # AES PADDING CRACKER
 The fastest pading oracle cracker, in C++ with multithreading (1 thread per block).
 
-The goal was to make a C++ version, with improvements, of my AES-CBC-CRACKER tool also available on my Github repo.
+The goal was to make a C++ version, with improvements, of my AES-CBC-CRACKER python tool also available on my Github repo.
 
-The goal is to exploit a padding oracle to recover a plaintext.
+The goal is to exploit a padding oracle to recover a plaintext and encrpyt new ones.
 
 Thanks to [cxxopts](https://github.com/jarro2783/cxxopts) I saved a lot of time on parsing arguments.
 
 # Usage
-First, compile the project:
+First, install required dependences and compile the project:
 ```bash
+sudo apt install libcurl4-openssl-dev
 make
 ```
 
