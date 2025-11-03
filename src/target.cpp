@@ -45,8 +45,8 @@ const unsigned int& Target::getBlockSize() {
 }
 
 const std::string Target::getPayload(std::string& cypher) {
-    if (method == GET) {
-        return url+'?'+data+cypher;
+    if (method == GET) { // ADAPTATION POUR LE PENTEST
+        return url+stringToBase64(cypher);
     }
 
     if (method == COOKIES) {

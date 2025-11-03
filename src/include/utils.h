@@ -49,3 +49,7 @@ std::string BytesToHexString(const std::vector<unsigned int>& bytes);
 std::string BytesToBase64(const std::vector<unsigned int>& bytes);
 
 std::vector<unsigned int> Base64ToBytes(const std::string& b64);
+
+std::string base64ToString(const std::string& base64_input);
+
+std::string stringToBase64(const std::string& input);
